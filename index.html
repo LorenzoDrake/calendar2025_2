@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Календарь 2025</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --worked-color: #4CAF50;
+            --planned-color: #FFC107;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --border-color: #e0e0e0;
+            --weekend-color: #e57373;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: var(--text-color);
+    	    transform: scale(0.9) translateY(-80px);
+	    overflow-y: overlay; 
+	    max-height: 90vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+        }
+
+        .month-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .month-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 5px 0;
+            font-size: 0.8em;
+            color: var(--secondary-color);
+        }
+
+        .day {
+            text-align: center;
+            padding: 8px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: white;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        .day:hover {
+            background-color: #f0f4f8;
+        }
+
+        .empty {
+            visibility: hidden;
+        }
+
+        .weekend {
+            color: var(--weekend-color);
+        }
+
+        .worked::before {
+            content: "✕";
+            color: var(--worked-color);
+            font-size: 30px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 1;
+            z-index: -1;
+        }
+
+        .planned::before {
+            content: "●";
+            color: var(--planned-color);
+            font-size: 50px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -58%);
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            min-width: 200px;
+            flex: 1;
+        }
+
+        .stat-title {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .worked-stat {
+            color: var(--worked-color);
+        }
+
+        .planned-stat {
+            color: var(--planned-color);
+        }
+
+        .remaining-stat {
+            color: var(--primary-color);
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            height: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--worked-color), var(--secondary-color));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 900px) {
+            .calendar-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .calendar-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+.save-button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.save-button:hover {
+    background-color: #124e6d;
+    transform: translateY(-1px);
+}
+
+.save-button:active {
+    transform: translateY(1px);
+}
+
+    </style>
+</head>
+<body>
+    <h1>Календарь на 2025 год</h1>
+
+    <div class="calendar-container" id="calendarContainer"></div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-title">Отработано дней</div>
+            <div class="stat-value worked-stat" id="workedDays">0</div>
+            <div>из 25 необходимых</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">Запланировано</div>
+            <div class="stat-value planned-stat" id="plannedDays">0</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">Осталось</div>
+            <div class="stat-value remaining-stat" id="remainingDays">25</div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin: 30px;">
+        <button class="save-button" onclick="saveToFirebase()">Сохранить данные</button>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+
+    <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCAEBE4OuxIhT1C9iNQARY3NzjF-RRAUB4",
+  authDomain: "calendar2025ib.firebaseapp.com",
+  databaseURL: "https://calendar2025ib-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "calendar2025ib",
+  storageBucket: "calendar2025ib.firebasestorage.app",
+  messagingSenderId: "981266708896",
+  appId: "1:981266708896:web:9fa8faa0dfc0ca1aad4cc5",
+  measurementId: "G-WQ4WXH55YJ"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const dbRef = db.ref("calendar2025ib");
+
+        const totalRequiredDays = 25;
+        let workedDays = 0;
+        let plannedDays = 0;
+        let dayStates = {};
+
+        const calendarContainer = document.getElementById('calendarContainer');
+        const workedDaysEl = document.getElementById('workedDays');
+        const plannedDaysEl = document.getElementById('plannedDays');
+        const remainingDaysEl = document.getElementById('remainingDays');
+        const progressBarEl = document.getElementById('progressBar');
+
+        dbRef.once('value').then(snapshot => {
+            const data = snapshot.val() || {};
+            dayStates = data;
+            workedDays = Object.values(dayStates).filter(state => state === 'worked').length;
+            plannedDays = Object.values(dayStates).filter(state => state === 'planned').length;
+            updateStats();
+            initCalendar();
+        });
+
+        function initCalendar() {
+            const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            const weekdays = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+
+            for (let month = 0; month < 12; month++) {
+                const monthContainer = document.createElement('div');
+                monthContainer.className = 'month-container';
+
+                const monthTitle = document.createElement('div');
+                monthTitle.className = 'month-title';
+                monthTitle.textContent = months[month];
+                monthContainer.appendChild(monthTitle);
+
+                const monthGrid = document.createElement('div');
+                monthGrid.className = 'month-grid';
+
+                weekdays.forEach(day => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'day-header';
+                    dayHeader.textContent = day;
+                    monthGrid.appendChild(dayHeader);
+                });
+
+                const date = new Date(2025, month, 1);
+                const daysInMonth = new Date(2025, month + 1, 0).getDate();
+                const firstDayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1;
+
+                for (let i = 0; i < firstDayOfWeek; i++) {
+                    const emptyDay = document.createElement('div');
+                    emptyDay.className = 'day empty';
+                    monthGrid.appendChild(emptyDay);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(2025, month, day);
+                    const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+                    const dateStr = `2025-${month + 1}-${day}`;
+
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'day';
+                    dayEl.textContent = day;
+
+                    if (isWeekend) dayEl.classList.add('weekend');
+                    if (dayStates[dateStr]) dayEl.classList.add(dayStates[dateStr]);
+
+                    dayEl.addEventListener('click', function () {
+                        toggleDayState(this, dateStr);
+                    });
+
+                    monthGrid.appendChild(dayEl);
+                }
+
+                monthContainer.appendChild(monthGrid);
+                calendarContainer.appendChild(monthContainer);
+            }
+        }
+
+        function toggleDayState(dayEl, dateStr) {
+            if (dayEl.classList.contains('worked')) {
+                dayEl.classList.remove('worked');
+                dayEl.classList.add('planned');
+                dayStates[dateStr] = 'planned';
+                workedDays--;
+                plannedDays++;
+            } else if (dayEl.classList.contains('planned')) {
+                dayEl.classList.remove('planned');
+                delete dayStates[dateStr];
+                plannedDays--;
+            } else {
+                dayEl.classList.add('worked');
+                dayStates[dateStr] = 'worked';
+                workedDays++;
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            workedDaysEl.textContent = workedDays;
+            plannedDaysEl.textContent = plannedDays;
+            const remaining = Math.max(totalRequiredDays - workedDays, 0);
+            remainingDaysEl.textContent = remaining;
+
+            const progressPercent = Math.min((workedDays / totalRequiredDays) * 100, 100);
+            progressBarEl.style.width = `${progressPercent}%`;
+            progressBarEl.style.background = workedDays >= totalRequiredDays
+                ? 'linear-gradient(to right, var(--worked-color), #2E7D32)'
+                : 'linear-gradient(to right, var(--worked-color), var(--secondary-color))';
+        }
+
+        function saveToFirebase() {
+            dbRef.set(dayStates)
+                .then(() => alert("Данные сохранены в Firebase!"))
+                .catch(err => {
+                    console.error(err);
+                    alert("Ошибка при сохранении в Firebase");
+                });
+        }
+    </script>
+</body>
+</html>
